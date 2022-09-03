@@ -1,7 +1,7 @@
 # SoMoFormer: Multi-Person Pose Forecasting with Transformers
 This is the repository for the paper
 
-> **On a Guided Nonnegative Matrix Factorization** <br>
+> **SoMoFormer: Multi-Person Pose Forecasting with Transformers** <br>
 > by Edward Vendrow, Satyajit Kumar, Ehsan Adeli, Hamid Rezatofighi <br>
 > https://arxiv.org/abs/2208.14023
 > 
