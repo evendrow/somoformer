@@ -1,7 +1,7 @@
 SEED: 0
 EXPERIMENT: 'default_experiment'
 TRAIN:
-    batch_size: 128 #512 # 1024 
+    batch_size: 128
     epochs: 32
     num_workers: 0
     input_track_size: 16
@@ -11,7 +11,6 @@ TRAIN:
     lr_drop: true
     aux_weight: 0.2
     val_frequency: 1
-    pretrain_epochs: -1
     optimizer: "adam"
     max_grad_norm: 1.0
 DATA:
@@ -23,21 +22,20 @@ DATA:
     aug_scale: false # Whether to randomly scale squences
     aug_permute: True
     train_datasets:
-        #- somof
         - 3dpw
 MODEL:
     num_kps: 13 # Somof has 13 keypoints
     num_layers: 6 
     num_heads: 8
     dim_hidden: 256
-    dim_feedforward: 1024 #1024
+    dim_feedforward: 1024
     type: "somoformer"
     eval_single: false
     dct_n: 30
     location_method: "grid"
     grid_len: 3
     grid_emb_size: 8
-    checkpoint: "" #../checkpoint_run23_d256_smalldata/checkpoint.pth.tar" #finetune_3.pth.tar"
+    checkpoint: ""
     output_scale: 1 # scale applied to model outputs. Since we predict deltas, it may help with training
     normalize_inputs: false # Whether to apply normalization to input sequences
     residual_connection: true
