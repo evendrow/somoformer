@@ -10,3 +10,75 @@ This is the repository for the paper
 The code for this paper will be made available soon.
 
 For inquiries, please contact [evendrow@stanford.edu](mailto:evendrow@stanford.edu)
+
+## Getting Started
+
+Clone the repo:
+
+```
+git clone https://github.com/evendrow/somoformer.git
+```
+
+(Optional) Create a Conda environment:
+```
+conda create -n poseforecast python=3.8
+```
+
+Install the requirements using `pip`:
+```
+pip install -r requirements.txt
+```
+
+### Requirements
+
+- pytorch
+- pillow
+- tensorboard
+- progress
+
+## Data
+
+First, create a `data/` folder in the repo root directory. We expect the following structure:
+```
+data/
+    3dpw/
+        sequenceFiles/
+            test/
+            train/
+            validation/
+    somof/
+        3dpw_test_frames_in.json
+        3dpw_test_in.json
+        ...
+```
+The 3DPW data files for both the `3dpw` and `somof` folders can be downloaded from the 3DPW website [here](https://virtualhumans.mpi-inf.mpg.de/3DPW/).
+
+## Training
+
+The model is trained with the training script `src/train.py`, with the following instructions:
+```
+usage: train.py [-h] [--exp_name EXP_NAME] [--cfg CFG]
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --exp_name EXP_NAME  Experiment name. Otherwise will use timestamp
+  --cfg CFG            Config name. Otherwise will use default config
+```
+
+You can train a model on 3DPW with
+```
+python src/train.py --cfg src/configs/release.yaml --exp_name train_on_3dpw
+```
+
+## Evaluation
+We provide a script to evaluate trained SoMoFormer models. You can run
+```
+python src/evaluate.py --ckpt ./path/to/model/checkpoint.pth
+```
+to get these metrics.
+
+## Progress
+
+This repository is work-in-progress and will continue to get updated and improved over the coming months. Please let us know if you would like any particular features!
+
+The models used for our paper are additionally trained on data from AMASS which helps greatly with model performance. We are working on releasing thes scripts we use to process this data for training.
