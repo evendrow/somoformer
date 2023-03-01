@@ -6,7 +6,7 @@ import torch
 
 import numpy as np
 from PIL import Image
-from utils.utils import path_to_data
+from utils.utils import path_to_data, path_to_src
 
 def tracks_for_sequence(annotations):
     """ For a list annotations, creates a dictionary of tracks, each
@@ -97,7 +97,7 @@ def load_data_somof(split="train", db="3dpw"):
         with open(path_to_data('somof', f'{db}_{split}_masks_in.json')) as f:
             masks_in = np.asarray(json.load(f))
 
-    if split == "test":
+    if split == "test" and False:
         frames_out = None
         mask = None
     else:
@@ -107,4 +107,61 @@ def load_data_somof(split="train", db="3dpw"):
             with open(path_to_data('somof', f'{db}_{split}_masks_out.json')) as f:
                 masks_out = np.asarray(json.load(f))
 
+
     return frames_in, frames_out, masks_in, masks_out
+
+
+def load_data_amass(split="train", sub="CMU"):
+    if split != "train":
+        return []
+
+    #datalist = []
+    if sub == "CMU":
+        datalist = torch.load(path_to_data('amass/cmu.pt'))
+    elif sub == "BMLmovi":
+        datalist = torch.load(path_to_data('amass/bmlmovi.pt'))
+    elif sub == "BMLrub":
+        datalist = torch.load(path_to_data('amass/bmlrub.pt'))
+    else:
+        raise ValueError("Dataset not found")
+    #for path in glob.glob(path_to_data('amass_processed_new_2')+'/*.npy'):
+    #    data = np.load(path, allow_pickle=True)
+        # what is this?
+        # well, the data processing from amass generates sequences which are
+        # not quite the same joint order as our 3dpw data. to keep it consistent,
+        # we have to flip around the y and z axis.
+   #     data = np.stack(data).squeeze()[:,:,[0, 2, 1]]
+   #     datalist.append(data)
+
+    return datalist 
+
+def load_data_amass_synth():
+    datalist = torch.load(path_to_data('amass_synth/amass_synth.pt'))
+    return datalist
+
+def load_data_mupots(split="train"):
+    if split != "train":
+        return []
+    #datalist = torch.load(path_to_data('mupots', 'mupots.pt'))
+    datalist = np.load(path_to_data('mupots', 'mupots_120_3persons.npy'))
+    datalist = torch.from_numpy(datalist.reshape(-1, 3, 120, 15, 3))
+    
+    return datalist
+
+def load_data_nips_panoptic(split="train"):
+    if split == "val" or split == "valid":
+        split = "test"
+        
+    if split == "discriminator":
+        datalist = np.load(path_to_data('nips', "discriminator_3_120_mocap.npy"))
+    else:
+        datalist = np.load(path_to_data('nips', split+"_3_120.npy"))
+        
+    datalist = torch.from_numpy(datalist).reshape(-1, 3, 120, 15, 3)
+    return datalist
+
+def load_data_panoptic(split="train"):
+    # Right now, just loads length 2 sequences
+    datalist = torch.load(path_to_data('panoptic_proc', 'panoptic_all.pt'))
+    datalist = [d[...,:3] for d in datalist]
+    return datalist

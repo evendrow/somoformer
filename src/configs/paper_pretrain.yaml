@@ -1,0 +1,54 @@
+SEED: 0
+EXPERIMENT: 'default_experiment'
+TRAIN:
+    batch_size: 512 #512 # 1024 
+    epochs: 512
+    num_workers: 0
+    mask_prob_base: 0.994
+    input_track_size: 16
+    output_track_size: 14
+    lr: 0.001
+    lr_decay: 1
+    lr_drop: true
+    aux_weight: 0.2
+    val_frequency: 1
+    pretrain_epochs: -1
+    frame_loss_cutoff: 16
+    optimizer: "adam"
+    warmup_steps: 4000
+    max_grad_norm: 1.0
+DATA:
+    joints: "somof"
+    deltas: False # Whether to predict pose deltas instead of the pose itself
+    add_flips: True # Whether to add flipped sequences to dataset
+    segmented: False # Whether to segment data into 30-frame sequences. If false, take every possibly 30-frame sequence (so 30x more data)
+    aug_rotate: true # Whether to randomly rotate sequences about y (vertical) axis
+    aug_scale: false # Whether to randomly scale squences
+    aug_permute: True
+    train_datasets:
+        #- somof_multi
+        #- panoptic_multi
+        - 3dpw
+        #- 3dpw
+        #- mupots_multi
+        #- amass
+        - BMLmovi
+        - BMLrub
+        - CMU
+MODEL:
+    num_kps: 13 # Somof has 13 keypoints
+    num_layers: 6
+    num_heads: 8
+    dim_hidden: 256
+    dim_feedforward: 1024
+    type: "somoformer"
+    eval_single: false
+    dct_n: 30
+    location_method: "grid"
+    grid_len: 3
+    grid_emb_size: 8
+    checkpoint: "" #../checkpoint_run23_d256_smalldata/checkpoint.pth.tar" #finetune_3.pth.tar"
+    output_scale: 1 # scale applied to model outputs. Since we predict deltas, it helps with training
+    normalize_inputs: false # Whether to apply normalization to input sequences
+    residual_connection: true
+    learned_embedding: true

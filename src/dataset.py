@@ -7,7 +7,7 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 
 from utils.utils import path_to_data
-from utils.data import load_data_3dpw_multiperson, load_data_somof
+from utils.data import load_data_3dpw_multiperson, load_data_somof, load_data_amass
 from torchvision import transforms
 
 def collate_batch(batch):
@@ -276,6 +276,31 @@ class ThreeDPWDataset(MultiPersonPoseDataset):
             self.datalist.append(people)
 
 
+class AMASSDataset(MultiPersonPoseDataset):
+    def __init__(self, subset, **args):
+        self.sub = subset
+        assert subset in ["CMU", "BMLmovi", "BMLrub"], f"Subset '{subset}' not valid."
+        super(AMASSDataset, self).__init__(subset, frequency=1, **args)
+
+    def load_data(self):
+        self.data = load_data_amass(split=self.split, sub=self.sub)
+
+        self.datalist = []
+        tracks = []
+        for track in self.data:
+            J_3D_real = torch.from_numpy(track)
+            J_3D_mask = torch.ones(J_3D_real.shape[:-1])
+        
+            J_3D_real = J_3D_real[:,self.SOMOF_JOINTS]
+            J_3D_mask = J_3D_mask[:,self.SOMOF_JOINTS]
+            
+            self.datalist.append([(J_3D_real, J_3D_mask)])
+
+        # for scene in self.data:
+        #     people = [(torch.from_numpy(joints)[:,self.SOMOF_JOINTS],
+        #                torch.ones(joints.shape[:-1])[:,self.SOMOF_JOINTS]) for joints in scene]
+        #     self.datalist.append(people)
+
 def create_dataset(dataset_name, logger, **args):
     logger.info("Loading dataset " + dataset_name)
     
@@ -283,6 +308,8 @@ def create_dataset(dataset_name, logger, **args):
         dataset = ThreeDPWDataset(**args)
     elif dataset_name == "somof":
         dataset = SoMoFDataset(**args)
+    elif dataset_name in ["CMU" , "BMLmovi", "BMLrub"]:
+        dataset = AMASSDataset(dataset_name, **args)
     else:
         raise ValueError(f"Dataset with name '{dataset_name}' not found.")
         

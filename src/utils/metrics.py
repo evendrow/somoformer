@@ -17,6 +17,8 @@ def VIM(GT, pred, dataset_name, mask):
 
     if dataset_name == "posetrack":
         mask = np.repeat(mask, 2, axis=-1)
+        # print('mask:', mask.shape)
+        # print('gt:', gt_i_global.shape)
         errorPose = np.power(gt_i_global - pred, 2) * mask
         #get sum on joints and remove the effect of missing joints by averaging on visible joints
         errorPose = np.sqrt(np.divide(np.sum(errorPose, 1), np.sum(mask,axis=1)))
@@ -104,7 +106,7 @@ def keypoint_mse(output, target, mask=None):
         valids = torch.sum(mask.squeeze(), dim=-1)
 
     norm = torch.norm(output * mask - target * mask, p=2, dim=-1)
-    mean_K = torch.sum(norm, dim=-1) / valids
+    mean_K = torch.sum(norm, dim=-1) / (valids + 1e-6)
     mean_B = torch.mean(mean_K)
 
     return mean_B

@@ -105,6 +105,7 @@ def train(config, logger, experiment_name=""):
     dataset_train = ConcatDataset(get_datasets(config['DATA']['train_datasets'], config, logger))
     dataloader_train = dataloader_for(dataset_train, config, shuffle=True, pin_memory=True)
     logger.info(f"Training on a total of {len(dataset_train)} annotations.")
+    logger.info(f"Training on a total of {len(dataloader_train)} batches.")
 
     if config["DATA"]["joints"] == "somof":
         # 3dpw validation set for val metrics
@@ -121,6 +122,16 @@ def train(config, logger, experiment_name=""):
         dataloader_somof_train = dataloader_for(dataset_somof_train, config, shuffle=False)
         dataloader_somof_val = dataloader_for(dataset_somof_val, config, shuffle=False)
         
+    elif config["DATA"]["joints"] == "posetrack":
+        # 3dpw validation set for val metrics
+        dataset_val = create_dataset("posetrack", logger, split="valid", track_size=(in_F+out_F), track_cutoff=in_F, segmented=True)
+        dataloader_val = dataloader_for(dataset_val, config, shuffle=False, pin_memory=True)
+    
+        # SoMoF datasets for training-time VIM metrics
+        dataset_somof_train = create_dataset("posetrack", logger, split="train", track_size=(in_F+out_F), track_cutoff=in_F, segmented=True)
+        dataset_somof_val = create_dataset("posetrack", logger, split="valid", track_size=(in_F+out_F), track_cutoff=in_F, segmented=True)
+        dataloader_somof_train = dataloader_for(dataset_somof_train, config, shuffle=False)
+        dataloader_somof_val = dataloader_for(dataset_somof_val, config, shuffle=False)
     
     writer_name = experiment_name + "_" + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
     writer_train = SummaryWriter(os.path.join(config["OUTPUT"]["runs_dir"], f"{writer_name}_TRAIN"))
@@ -283,6 +294,32 @@ def train(config, logger, experiment_name=""):
                 for i in range(len(train_mpjpe_3dpw_joint)):
                     writer_valid.add_scalar(f"MPJPE/3dpw/j_{i}", val_mpjpe_3dpw_joint[i], global_step)
                     
+            elif config["DATA"]["joints"] == "posetrack":
+                train_vim_somof = evaluate_vim(model, dataloader_somof_train, config, logger, return_all=True, bar_prefix="SoMoF train") 
+                writer_train.add_scalar("VIM_100ms/somof", train_vim_somof[1], global_step)
+                writer_train.add_scalar("VIM_240ms/somof", train_vim_somof[3], global_step)
+                writer_train.add_scalar("VIM_500ms/somof", train_vim_somof[7], global_step)
+                writer_train.add_scalar("VIM_640ms/somof", train_vim_somof[9], global_step)
+                writer_train.add_scalar("VIM_900ms/somof", train_vim_somof[13], global_step)
+                writer_train.add_scalar("VIM/somof", train_vim_somof.mean(), global_step)
+                
+                val_vim_somof = evaluate_vim(model, dataloader_somof_val, config, logger, return_all=True, bar_prefix="SoMoF valid")
+                writer_valid.add_scalar("VIM_100ms/somof", val_vim_somof[1], global_step)
+                writer_valid.add_scalar("VIM_240ms/somof", val_vim_somof[3], global_step)
+                writer_valid.add_scalar("VIM_500ms/somof", val_vim_somof[7], global_step)
+                writer_valid.add_scalar("VIM_640ms/somof", val_vim_somof[9], global_step)
+                writer_valid.add_scalar("VIM_900ms/somof", val_vim_somof[13], global_step)
+                writer_valid.add_scalar("VIM/somof", val_vim_somof.mean(), global_step)
+
+                # 3DPW vim and loss calculations
+
+                val_vim_posetrack = evaluate_vim(model, dataloader_val, config, logger, return_all=True, bar_prefix="PoseTrack valid")
+                writer_valid.add_scalar("VIM_100ms/posetrack", val_vim_posetrack[1], global_step)
+                writer_valid.add_scalar("VIM_240ms/posetrack", val_vim_posetrack[3], global_step)
+                writer_valid.add_scalar("VIM_500ms/posetrack", val_vim_posetrack[7], global_step)
+                writer_valid.add_scalar("VIM_640ms/posetrack", val_vim_posetrack[9], global_step)
+                writer_valid.add_scalar("VIM_900ms/posetrack", val_vim_posetrack[13], global_step)
+                writer_valid.add_scalar("VIM/posetrack", val_vim_posetrack.mean(), global_step)
 
         val_loss = evaluate_loss(model, dataloader_val, config)
         writer_valid.add_scalar("loss", val_loss, global_step)

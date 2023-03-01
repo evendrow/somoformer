@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 import numpy as np
-import torch_dct as dct
+# import torch_dct as dct
 from utils.dct import get_dct_matrix
 
 class AuxilliaryEncoder(nn.TransformerEncoder):
@@ -133,6 +133,20 @@ class SoMoFormer(nn.Module):
             0.0039, 0.0027, 0.0022, 0.0036, 0.0024, 0.0025, 0.0017, 0.0029, 0.0016,
             0.0024, 0.0015, 0.0026]).to(device)[:dct_n]
         
+
+        if num_joints == 14:
+            print('Using Posetrack DCT')
+            self.dct_m = torch.Tensor([ 5.3243e-02, -6.0472e-03, -7.2297e-02, -4.9128e-03,  8.1936e-03,
+                1.8048e-03, -8.1131e-03, -1.4365e-03,  9.1773e-04,  1.1104e-03,
+                -3.1621e-03, -7.2587e-04,  4.7325e-04,  5.8135e-04, -3.9191e-04,
+                3.4860e-04, -8.1090e-04, -3.2206e-04, -2.9175e-04, -1.5268e-04,
+                -5.1605e-04, -5.2221e-04,  1.3108e-06,  1.0118e-03, -1.5232e-04,
+                -8.4104e-04,  2.7592e-05,  7.2812e-04, -4.4474e-04, -1.5173e-04])
+            self.dct_s = torch.Tensor([2.0158, 0.4596, 0.2984, 0.1957, 0.1623, 0.1263, 0.1122, 0.0936, 0.0856,
+                0.0736, 0.0692, 0.0625, 0.0587, 0.0537, 0.0503, 0.0488, 0.0453, 0.0431,
+                0.0427, 0.0407, 0.0391, 0.0375, 0.0370, 0.0357, 0.0369, 0.0347, 0.0352,
+                0.0334, 0.0356, 0.0331])
+
 #         self.output_scale = torch.nn.Parameter(torch.ones(1)*output_scale)
 
     
